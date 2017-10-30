@@ -2,18 +2,10 @@
 #define TCP_CHAT_PROTOCOL_HPP
 
 #include <cstdint>
+#include <array>
 
 namespace Common {
 
-    enum MSG_TYPE {
-        OK      = 1,
-        ERRO    = 2,
-        OI      = 3,
-        FLW     = 4,
-        MSG     = 5,
-        CREQ    = 6,
-        CLIST   = 7
-    };
 
     class Protocol {
 
