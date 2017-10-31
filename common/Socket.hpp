@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 namespace Common {
+
     class Socket {
 
         int _socket;

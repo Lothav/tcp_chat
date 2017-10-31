@@ -3,7 +3,13 @@
 
 namespace Common {
     class HandleErrors {
-                   
+
+    public:
+
+        void checkParams() {
+
+        }
+
     };
 }
 
