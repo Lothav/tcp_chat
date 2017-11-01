@@ -9,25 +9,34 @@
 #include <arpa/inet.h>
 #include "../common/Socket.hpp"
 
+#define TC_MAX_REQUESTS 5
+
 namespace Server {
 
     class Module : Common::Socket
     {
 
     public:
-        Module(std::string port)
+        explicit Module(std::string port)
         {
-            struct sockaddr_in dst = {};
-            dst.sin_family  = AF_INET;
-            dst.sin_port    = htons(static_cast<uint16_t>(std::stoi(port.c_str())));
-            inet_aton("127.0.0.1", &dst.sin_addr);
+            int size = 1;
+            int _socket_server = this->getSocket();
+            if (setsockopt(_socket_server, SOL_SOCKET, SO_REUSEADDR, &size, sizeof(int)) < 0)
+                printf("setsockopt(SO_REUSEADDR) failed");
 
-            auto *sa_dst = (struct sockaddr *)&dst;
-            while(connect(this->_socket, sa_dst, sizeof(dst))) {}
-        }
+            struct sockaddr_in 	serv_addr = {};
+            serv_addr.sin_family 		= AF_INET;
+            serv_addr.sin_port   		= htons(static_cast<uint16_t>(std::stoi(port.c_str())));
+            inet_aton(LOCAL_HOST, &serv_addr.sin_addr);
 
-        void run() {
+            while (bind(_socket_server, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {}
 
+            listen(this->getSocket(), TC_MAX_REQUESTS);
+
+            struct sockaddr_in 	cli_addr = {};
+            socklen_t clilen = sizeof(cli_addr);
+
+            int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
         }
 
     };

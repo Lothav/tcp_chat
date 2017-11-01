@@ -8,11 +8,16 @@
 #include <sys/socket.h>
 #include <stdexcept>
 
+#define LOCAL_HOST "127.0.0.1"
+
 namespace Common {
 
     class Socket {
 
         int _socket;
+
+    public:
+
 
     protected:
 
@@ -23,6 +28,11 @@ namespace Common {
                 throw std::runtime_error("ERROR opening socket");
             }
 
+        }
+
+        int getSocket()
+        {
+            return _socket;
         }
 
     };
