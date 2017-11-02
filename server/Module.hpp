@@ -7,6 +7,7 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <zconf.h>
 #include "../common/Socket.hpp"
 
 #define TC_MAX_REQUESTS 5
@@ -17,7 +18,7 @@ namespace Server {
     {
 
     public:
-        explicit Module(std::string port)
+        explicit Module(char* port)
         {
             int size = 1;
             int _socket_server = this->getSocket();
@@ -25,8 +26,8 @@ namespace Server {
                 printf("setsockopt(SO_REUSEADDR) failed");
 
             struct sockaddr_in 	serv_addr = {};
-            serv_addr.sin_family 		= AF_INET;
-            serv_addr.sin_port   		= htons(static_cast<uint16_t>(std::stoi(port.c_str())));
+            serv_addr.sin_family = AF_INET;
+            serv_addr.sin_port   = htons(static_cast<uint16_t>(std::atoi(port)));
             inet_aton(LOCAL_HOST, &serv_addr.sin_addr);
 
             while (bind(_socket_server, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {}
@@ -37,6 +38,8 @@ namespace Server {
             socklen_t clilen = sizeof(cli_addr);
 
             int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
+
+
         }
 
     };

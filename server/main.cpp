@@ -6,11 +6,8 @@ int main(int argc, char* argv[])
 {
     try {
 
-        int port = atoi(argv[1]);
-
         {
-            std::unique_ptr<Server::Module> server_module (new Server::Module(port));
-            server_module->run();
+            std::unique_ptr<Server::Module> server_module (new Server::Module(argv[1]));
         }
     } catch (int a) {
 

@@ -7,9 +7,10 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <zconf.h>
 #include "../common/Socket.hpp"
 
-namespace Server {
+namespace Client {
 
     class Module : Common::Socket
     {
@@ -24,12 +25,26 @@ namespace Server {
 
             auto *sa_dst = (struct sockaddr *)&dst;
             while(connect(this->getSocket(), sa_dst, sizeof(dst))) {}
+
+            fd_set rfds = {};
+            struct timeval tv = {};
+            char buf[35];
+
+            while(1) {
+                FD_ZERO(&rfds);                     // Clear an fd_set
+                FD_SET(STDIN_FILENO, &rfds);        // Add a descriptor to an fd_set
+                FD_SET(this->getSocket(), &rfds);
+                tv.tv_sec = 5;
+                tv.tv_usec = 0;
+                int  retval = select(3, &rfds, nullptr, nullptr, &tv);
+                if (FD_ISSET(STDIN_FILENO, &rfds)) {
+                    if (fgets(buf, 35, stdin)) {
+                        printf("%d %s\n",__LINE__ ,buf);
+                    }
+                    printf("\nEnter command: ");
+                }
+            }
         }
-
-        void run() {
-
-        }
-
     };
 
 }
