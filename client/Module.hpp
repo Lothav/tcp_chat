@@ -30,11 +30,10 @@ namespace Client {
             auto *sa_dst = (struct sockaddr *)&dst;
             while(connect(socket_server, sa_dst, sizeof(dst)));
 
-            struct timeval tv = {};
             char buf[35];
 
-            fd_set master;
-            fd_set rfds;
+            fd_set master = {};
+            fd_set rfds = {};
 
             FD_ZERO(&master);
             FD_ZERO(&rfds);
@@ -42,26 +41,29 @@ namespace Client {
             FD_SET(STDIN_FILENO, &master);
             FD_SET(socket_server, &master); // s is a socket descriptor
 
+            struct timeval tv = {};
             tv.tv_sec = 5;
             tv.tv_usec = 0;
 
             while(true) {
                 rfds = master;
-
-                int retval = select(socket_server+1, &rfds, nullptr, nullptr, nullptr);
-                std::cout << retval << std::endl;
+                int retval = select(socket_server+1, &rfds, nullptr, nullptr, &tv);
                 if (retval > 0) {
                     if (FD_ISSET(STDIN_FILENO, &rfds)) {
                         if (fgets(buf, 35, stdin)) {
-                            Common::Protocol *protocol = new Common::Protocol(1,2,5,3);
                             send(socket_server, buf, strlen(buf), 0);
-                            std::cout << buf << std::endl;
+                            std::cout << "Eu: " << buf << std::endl;
                         }
                     }
                     if (FD_ISSET(socket_server, &rfds)) {
-                        int ret = recv(socket_server, buf, 4, 0);
-                        std::cout << buf << std::endl;
+                        ssize_t ret = recv(socket_server, buf, 4, 0);
+                        std::cout << "João: " << buf << std::endl;
                     }
+                } else {
+                    std::cout << "retval failed: " << retval << std::endl;
+                    std::cout << "socket disconnected: " << socket_server << std::endl;
+                    close(socket_server);
+                    break;
                 }
             }
         }

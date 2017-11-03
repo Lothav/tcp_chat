@@ -43,7 +43,7 @@ namespace Server {
             while (cont--) {
                 char buffer[4] = "ser";
                 send(_socket_client, &buffer, strlen(buffer), 0);
-                sleep(3);
+                sleep(10);
             }
         }
     };
