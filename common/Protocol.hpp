@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+#include <netinet/in.h>
 
 namespace Common {
 
@@ -19,11 +20,12 @@ namespace Common {
 
         }
 
-        void ahehae() {
-
-        }
-        void aahehae() {
-
+        void toHostOrder()
+        {
+            this->type  = ntohs(this->type);
+            this->src   = ntohs(this->src);
+            this->dest  = ntohs(this->dest);
+            this->seq   = ntohs(this->seq);
         }
     };
 

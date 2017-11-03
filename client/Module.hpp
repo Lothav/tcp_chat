@@ -29,6 +29,7 @@ namespace Client {
 
             auto *sa_dst = (struct sockaddr *)&dst;
             while(connect(socket_server, sa_dst, sizeof(dst)));
+            /*
 
             char buf[35];
 
@@ -65,7 +66,7 @@ namespace Client {
                     close(socket_server);
                     break;
                 }
-            }
+            }*/
         }
 
         void sayHi () {

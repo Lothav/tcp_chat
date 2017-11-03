@@ -8,6 +8,7 @@ int main(int argc, char* argv[])
 
         {
             std::unique_ptr<Client::Module> client_module (new Client::Module(argv[1]));
+            client_module->sayHi();
         }
     } catch (int a) {
 

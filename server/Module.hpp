@@ -40,21 +40,28 @@ namespace Server {
             socklen_t clilen = sizeof(cli_addr);
 
             int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
+            this->receive(_socket_client);
+            /*
             int cont = 30;
             while (cont--) {
                 char buffer[4] = "ser";
                 send(_socket_client, &buffer, strlen(buffer), 0);
                 sleep(10);
-            }
+            }*/
         }
 
-        char* receive (int socket)
+        void receive (int socket)
         {
             size_t buffer_size = sizeof(Common::Protocol) + 400 + 2;
-            auto buffer = (char *)malloc(buffer_size);
-            ssize_t recv_size = recv(socket, buffer, buffer_size, 0);
+            std::unique_ptr<char> buffer ((char *)malloc(buffer_size));
+            ssize_t recv_size = recv(socket, buffer.get(), buffer_size, 0);
             if (recv_size > 0) {
-                return buffer;
+                std::unique_ptr<Common::Protocol> protocol( new Common::Protocol() );
+
+                std::memcpy(protocol.get(), buffer.get(), sizeof(Common::Protocol));
+                protocol->toHostOrder();
+
+                std::cout << protocol->type << " " << protocol->src << " " << protocol->dest << " " << protocol->seq << " "  << std::endl;
             } else {
                 throw "asd";
             }
