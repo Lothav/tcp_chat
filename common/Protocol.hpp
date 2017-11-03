@@ -8,16 +8,16 @@ namespace Common {
 
     class Protocol {
 
-    private:
+    public:
 
         uint16_t type;
-        uint16_t id;
+        uint16_t src;
         uint16_t dest;
         uint16_t seq;
 
-    public:
+        Protocol() : type(), src(), dest(), seq() {
 
-        Protocol(uint16_t _type, uint16_t id, uint16_t dest, uint16_t seq): type(_type), id(id), dest(dest), seq(seq){}
+        }
 
         void ahehae() {
 

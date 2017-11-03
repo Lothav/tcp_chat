@@ -39,7 +39,7 @@ namespace Client {
             FD_ZERO(&rfds);
 
             FD_SET(STDIN_FILENO, &master);
-            FD_SET(socket_server, &master); // s is a socket descriptor
+            FD_SET(socket_server, &master);
 
             struct timeval tv = {};
             tv.tv_sec = 5;
@@ -66,6 +66,17 @@ namespace Client {
                     break;
                 }
             }
+        }
+
+        void sayHi () {
+
+            std::unique_ptr<Common::Protocol> protocol (new Common::Protocol());
+            protocol->type = htons(3);
+            protocol->src  = htons(0);
+            protocol->dest = htons(0);
+            protocol->seq  = htons(0);
+
+            send(this->getSocket(), protocol.get(), sizeof(*protocol), 0);
         }
     };
 
