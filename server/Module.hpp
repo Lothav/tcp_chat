@@ -10,6 +10,7 @@
 #include <zconf.h>
 #include <cstring>
 #include "../common/Socket.hpp"
+#include "../common/Protocol.hpp"
 
 #define TC_MAX_REQUESTS 5
 
@@ -44,6 +45,18 @@ namespace Server {
                 char buffer[4] = "ser";
                 send(_socket_client, &buffer, strlen(buffer), 0);
                 sleep(10);
+            }
+        }
+
+        char* receive (int socket)
+        {
+            size_t buffer_size = sizeof(Common::Protocol) + 400 + 2;
+            auto buffer = (char *)malloc(buffer_size);
+            ssize_t recv_size = recv(socket, buffer, buffer_size, 0);
+            if (recv_size > 0) {
+                return buffer;
+            } else {
+                throw "asd";
             }
         }
     };
