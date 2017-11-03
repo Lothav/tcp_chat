@@ -39,10 +39,11 @@ namespace Server {
             socklen_t clilen = sizeof(cli_addr);
 
             int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
-            while (1) {
-                char buffer[4] = "fas";
+            int cont = 30;
+            while (cont--) {
+                char buffer[4] = "ser";
                 send(_socket_client, &buffer, strlen(buffer), 0);
-                sleep(1);
+                sleep(3);
             }
         }
     };

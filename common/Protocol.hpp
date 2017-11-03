@@ -6,7 +6,6 @@
 
 namespace Common {
 
-
     class Protocol {
 
     private:
@@ -17,7 +16,15 @@ namespace Common {
         uint16_t seq;
 
     public:
+
         Protocol(uint16_t _type, uint16_t id, uint16_t dest, uint16_t seq): type(_type), id(id), dest(dest), seq(seq){}
+
+        void ahehae() {
+
+        }
+        void aahehae() {
+
+        }
     };
 
 }
