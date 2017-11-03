@@ -69,15 +69,15 @@ namespace Client {
             }*/
         }
 
-        void sayHi () {
+        void sayHi ()
+        {
+            Common::header_str* header_hi = {};
+            header_hi->type = htons(3);
+            header_hi->src  = htons(0);
+            header_hi->dest = htons(0);
+            header_hi->seq  = htons(0);
 
-            std::unique_ptr<Common::Protocol> protocol (new Common::Protocol());
-            protocol->type = htons(3);
-            protocol->src  = htons(0);
-            protocol->dest = htons(0);
-            protocol->seq  = htons(0);
-
-            send(this->getSocket(), protocol.get(), sizeof(*protocol), 0);
+            send(this->getSocket(), header_hi, sizeof(Common::header_str), 0);
         }
     };
 

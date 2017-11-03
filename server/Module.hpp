@@ -52,16 +52,22 @@ namespace Server {
 
         void receive (int socket)
         {
-            size_t buffer_size = sizeof(Common::Protocol) + 400 + 2;
+            size_t buffer_size = sizeof(Common::header_str) + sizeof(Common::msg_str);
             std::unique_ptr<char> buffer ((char *)malloc(buffer_size));
             ssize_t recv_size = recv(socket, buffer.get(), buffer_size, 0);
+
             if (recv_size > 0) {
                 std::unique_ptr<Common::Protocol> protocol( new Common::Protocol() );
 
-                std::memcpy(protocol.get(), buffer.get(), sizeof(Common::Protocol));
-                protocol->toHostOrder();
+                std::memcpy(protocol->getHeader(), buffer.get(), sizeof(Common::header_str));
+                protocol->headerToHostOrder();
 
-                std::cout << protocol->type << " " << protocol->src << " " << protocol->dest << " " << protocol->seq << " "  << std::endl;
+                if (protocol->mustReadMsg()) {
+                    std::memcpy(protocol->getMsg(), buffer.get()+sizeof(Common::header_str), sizeof(Common::msg_str));
+                    protocol->msgToHostOrder();
+                }
+
+                std::cout << protocol->getHeader()->type << " " << protocol->getHeader()->src << " " << protocol->getHeader()->dest << " " << protocol->getHeader()->seq << " "  << std::endl;
             } else {
                 throw "asd";
             }
