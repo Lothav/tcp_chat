@@ -87,6 +87,8 @@ namespace Common {
 
         void tcpSend(int socket_, Common::Protocol* protocol_)
         {
+			protocol_->headerToNetworkOrder();
+			protocol_->msgToNetworkOrder();
             size_t send_size = protocol_->hasMsg() ? sizeof(header_str) + sizeof(msg_str) : sizeof(header_str);
             send(socket_, protocol_, send_size, 0);
         }

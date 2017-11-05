@@ -45,6 +45,11 @@ namespace Common {
 			this->_header = *header;
 		}
 
+		void setMsg (struct msg_str* msg)
+		{
+			this->_msg = *msg;
+		}
+
         void headerToHostOrder()
         {
             this->_header.type  = ntohs(this->_header.type);
@@ -57,6 +62,19 @@ namespace Common {
         {
             this->_msg.C = ntohs(this->_msg.C);
         }
+
+		void headerToNetworkOrder()
+		{
+			this->_header.type  = htons(this->_header.type);
+			this->_header.src   = htons(this->_header.src);
+			this->_header.dest  = htons(this->_header.dest);
+			this->_header.seq   = htons(this->_header.seq);
+		}
+
+		void msgToNetworkOrder()
+		{
+			this->_msg.C = htons(this->_msg.C);
+		}
 
 		static Protocol* getProtocolFromBuffer(const char* buffer)
 		{

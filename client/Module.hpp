@@ -39,13 +39,29 @@ namespace Client {
 
     private:
 
+        uint16_t my_id_ = 0;
+
         void handleEvent(int event_mask, int socket_) {
             if ((event_mask & Common::Socket::EVENT_TYPE::KEYBOARD) == Common::Socket::EVENT_TYPE::KEYBOARD) {
                 char buf[35];
                 if (fgets(buf, 35, stdin)) {
                     std::cout << "Eu: " << buf << std::endl;
-                    // @TODO handle keyboard
-                    // handler(buf);
+
+                    auto* header_ = new Common::header_str;
+                    header_->type = Common::Protocol::MSG;
+                    header_->dest = 0;
+                    header_->seq  = 0;
+                    header_->src  = this->my_id_;
+
+                    auto* msg_ = new Common::msg_str;
+                    msg_->C    = static_cast<uint16_t>(strlen(buf));
+                    strcpy(msg_->msg, buf);
+
+                    std::unique_ptr<Common::Protocol> protocol (new Common::Protocol());
+                    protocol->setHeader(header_);
+                    protocol->setMsg(msg_);
+
+                    this->tcpSend(socket_, protocol.get());
                 }
             }
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
@@ -55,6 +71,7 @@ namespace Client {
                 switch (header_->type)
                 {
                     case Common::Protocol::TYPE::OK:
+                        this->my_id_ = header_->dest;
                         break;
                     default:
                         break;
@@ -69,7 +86,6 @@ namespace Client {
             header_hi->src  = htons(0);
             header_hi->dest = htons(0);
             header_hi->seq  = htons(0);
-
             send(this->getSocket(), header_hi.get(), sizeof(Common::header_str), 0);
         }
     };

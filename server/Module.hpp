@@ -62,10 +62,14 @@ namespace Server {
                 switch (header_->type)
                 {
                     case Common::Protocol::TYPE::OI:
-                        header_->type = Common::Protocol::TYPE::OK;
-                        protocol_->setHeader(header_);
                         this->clients_sockets_.push_back(socket_);
+
+                        header_->type = Common::Protocol::TYPE::OK;
+                        header_->dest = static_cast<uint16_t>(this->clients_sockets_.size());
+                        protocol_->setHeader(header_);
+                        
                         this->tcpSend(socket_, protocol_);
+
                         break;
                     default:
                         break;
