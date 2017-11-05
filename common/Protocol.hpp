@@ -42,7 +42,7 @@ namespace Common {
             this->_msg.C = ntohs(this->_msg.C);
         }
 
-        bool mustReadMsg()
+        bool hasMsg()
         {
             return this->_header.type == 5;
         }
