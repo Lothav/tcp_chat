@@ -45,7 +45,6 @@ namespace Common {
 
 		void tcpSelect(int m_socket_, std::vector<int>c_sockets_ = {}, const std::function<void(int, int)>& handler = nullptr)
 		{
-			char buf[35];
 
 			fd_set master = {};
 			fd_set rfds = {};
@@ -70,22 +69,16 @@ namespace Common {
 				int retval = select(nfds+1, &rfds, nullptr, nullptr, &tv);
 				if (retval > 0) {
 					if (FD_ISSET(STDIN_FILENO, &rfds)) {
-						if (fgets(buf, 35, stdin)) {
-							std::cout << "Eu: " << buf << std::endl;
-							// @TODO handle keyboard
-							// handler(buf);
-						}
+						handler(EVENT_TYPE::KEYBOARD, m_socket_);
 					}
 					if (FD_ISSET(m_socket_, &rfds)) {
 						handler(EVENT_TYPE::ACCEPT | EVENT_TYPE::RECEIVE, m_socket_);
 					}
-
 					for (auto c_socket : c_sockets_) {
 						if (FD_ISSET(c_socket, &rfds)) {
 							handler(EVENT_TYPE::RECEIVE, c_socket);
 						}
 					}
-
 				} else {
 					break;
 				}

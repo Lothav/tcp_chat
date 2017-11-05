@@ -39,10 +39,26 @@ namespace Client {
 
     private:
 
-        void handleEvent(int event_mask, int socket_)
-        {
-            if ((event_mask & Common::Socket::EVENT_TYPE::ACCEPT) == Common::Socket::EVENT_TYPE::ACCEPT) {
-
+        void handleEvent(int event_mask, int socket_) {
+            if ((event_mask & Common::Socket::EVENT_TYPE::KEYBOARD) == Common::Socket::EVENT_TYPE::KEYBOARD) {
+                char buf[35];
+                if (fgets(buf, 35, stdin)) {
+                    std::cout << "Eu: " << buf << std::endl;
+                    // @TODO handle keyboard
+                    // handler(buf);
+                }
+            }
+            if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
+                Common::Protocol* protocol_ = this->receive(socket_);
+                Common::header_str* header_ = protocol_->getHeader();
+                std::cout<< "type: " << header_->type << std::endl;
+                switch (header_->type)
+                {
+                    case Common::Protocol::TYPE::OK:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
