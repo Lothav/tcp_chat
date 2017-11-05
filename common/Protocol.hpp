@@ -7,6 +7,7 @@
 
 namespace Common {
 
+
     struct header_str {
         uint16_t type;
         uint16_t src;
@@ -28,6 +29,21 @@ namespace Common {
 
     public:
         Protocol(): _header({}), _msg({}) {}
+
+		enum TYPE : uint16_t {
+			OK 		= 1,
+			ERRO 	= 2,
+			OI 		= 3,
+			FLW 	= 4,
+			MSG 	= 5,
+			CREQ 	= 6,
+			CLIST 	= 7
+		};
+
+		void setHeader(struct header_str* header)
+		{
+			this->_header = *header;
+		}
 
         void headerToHostOrder()
         {

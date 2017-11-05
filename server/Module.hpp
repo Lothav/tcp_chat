@@ -41,8 +41,8 @@ namespace Server {
 
             int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
 
-            this->tcpSelect(_socket_client, false, [this](Common::Protocol* protocol_) {
-                this->handleReceive(protocol_);
+            this->tcpSelect(_socket_client, false, [_socket_client, this](Common::Protocol* protocol_) {
+                this->handleReceive(protocol_, _socket_client);
             });
 
             //std::unique_ptr<Common::Protocol> protocol = std::move(this->receive(_socket_client));
@@ -60,9 +60,21 @@ namespace Server {
 
     private:
 
-        void handleReceive(Common::Protocol* protocol_)
+        void handleReceive(Common::Protocol* protocol_, int _socket_client)
         {
-            std::cout<< "type: " << protocol_->getHeader()->type << std::endl;
+            Common::header_str* header_ = protocol_->getHeader();
+
+            std::cout<< "type: " << header_->type << std::endl;
+
+            switch (header_->type)
+            {
+                case Common::Protocol::TYPE::OI:
+                    header_->type = Common::Protocol::TYPE::OK;
+                    protocol_->setHeader(header_);
+                    this->tcpSend(_socket_client, protocol_);
+                    break;
+            }
+
         }
 
 
