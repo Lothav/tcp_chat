@@ -38,7 +38,7 @@ namespace Common {
             return socket_;
         }
 
-		void tcpSelect(int socket_, bool watch_stdin=false, const std::function<void(char*)>& handler = nullptr)
+		void tcpSelect(int socket_, bool watch_stdin=false, const std::function<void(Protocol*)>& handler = nullptr)
 		{
 			char buf[35];
 
@@ -63,13 +63,13 @@ namespace Common {
 					if (FD_ISSET(STDIN_FILENO, &rfds)) {
 						if (fgets(buf, 35, stdin)) {
 							std::cout << "Eu: " << buf << std::endl;
-							handler(buf);
+							// @TODO handle keyboard
+							// handler(buf);
 						}
 					}
 					if (FD_ISSET(socket_, &rfds)) {
-						ssize_t ret = recv(socket_, buf, 4, 0);
-						std::cout << "João: " << buf << std::endl;
-						handler(buf);
+						Common::Protocol* protocol_ = this->receive(socket_);
+						handler(protocol_);
 					}
 				} else {
 					std::cout << "retval failed: " << retval << std::endl;
@@ -86,26 +86,14 @@ namespace Common {
             send(socket_, protocol_, send_size, 0);
         }
 
-		std::unique_ptr<Common::Protocol> receive (int socket)
+		Common::Protocol* receive (int socket)
         {
             size_t buffer_size = sizeof(Common::header_str) + sizeof(Common::msg_str);
             std::unique_ptr<char> buffer ((char *)malloc(buffer_size));
             ssize_t recv_size = recv(socket, buffer.get(), buffer_size, 0);
 
             if (recv_size > 0) {
-                std::unique_ptr<Common::Protocol> protocol( new Common::Protocol() );
-
-                std::memcpy(protocol->getHeader(), buffer.get(), sizeof(Common::header_str));
-                protocol->headerToHostOrder();
-
-                if (protocol->hasMsg()) {
-                    std::memcpy(protocol->getMsg(), buffer.get()+sizeof(Common::header_str), sizeof(Common::msg_str));
-                    protocol->msgToHostOrder();
-                }
-
-				std::cout << protocol->getHeader()->type << " " << protocol->getHeader()->src << " " << protocol->getHeader()->dest << " " << protocol->getHeader()->seq << " "  << std::endl;
-
-				return protocol;
+                return Common::Protocol::getProtocolFromBuffer(buffer.get());
             } else {
                 throw "asd";
             }

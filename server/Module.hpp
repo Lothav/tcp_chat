@@ -41,8 +41,8 @@ namespace Server {
 
             int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
 
-            this->tcpSelect(_socket_client, false, [this](char* buffer) {
-                this->handleReceive(buffer);
+            this->tcpSelect(_socket_client, false, [this](Common::Protocol* protocol_) {
+                this->handleReceive(protocol_);
             });
 
             //std::unique_ptr<Common::Protocol> protocol = std::move(this->receive(_socket_client));
@@ -60,9 +60,9 @@ namespace Server {
 
     private:
 
-        void handleReceive(char* buffer)
+        void handleReceive(Common::Protocol* protocol_)
         {
-            std::cout<< "areaeae: " << buffer << std::endl;
+            std::cout<< "type: " << protocol_->getHeader()->type << std::endl;
         }
 
 

@@ -42,6 +42,23 @@ namespace Common {
             this->_msg.C = ntohs(this->_msg.C);
         }
 
+		static Protocol* getProtocolFromBuffer(const char* buffer)
+		{
+			auto protocol = new Common::Protocol();
+
+			std::memcpy(protocol->getHeader(), buffer, sizeof(Common::header_str));
+			protocol->headerToHostOrder();
+
+			if (protocol->hasMsg()) {
+				std::memcpy(protocol->getMsg(), buffer+sizeof(Common::header_str), sizeof(Common::msg_str));
+				protocol->msgToHostOrder();
+			}
+
+			std::cout << protocol->getHeader()->type << " " << protocol->getHeader()->src << " " << protocol->getHeader()->dest << " " << protocol->getHeader()->seq << " "  << std::endl;
+
+			return protocol;
+		}
+
         bool hasMsg()
         {
             return this->_header.type == 5;

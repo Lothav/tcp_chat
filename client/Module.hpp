@@ -71,13 +71,13 @@ namespace Client {
 
         void sayHi ()
         {
-            Common::header_str* header_hi = {};
+            std::unique_ptr<Common::header_str> header_hi (new Common::header_str);
             header_hi->type = htons(3);
             header_hi->src  = htons(0);
             header_hi->dest = htons(0);
             header_hi->seq  = htons(0);
 
-            send(this->getSocket(), header_hi, sizeof(Common::header_str), 0);
+            send(this->getSocket(), header_hi.get(), sizeof(Common::header_str), 0);
         }
     };
 
