@@ -40,14 +40,29 @@ namespace Server {
             socklen_t clilen = sizeof(cli_addr);
 
             int _socket_client = accept(_socket_server, (struct sockaddr *)&cli_addr, &clilen);
-            this->receive(_socket_client);
-            /*
-            int cont = 30;
-            while (cont--) {
-                char buffer[4] = "ser";
-                send(_socket_client, &buffer, strlen(buffer), 0);
-                sleep(10);
-            }*/
+
+            this->tcpSelect(_socket_client, false, [this](char* buffer) {
+                this->handleReceive(buffer);
+            });
+
+            //std::unique_ptr<Common::Protocol> protocol = std::move(this->receive(_socket_client));
+
+			//std::cout << protocol->getHeader()->type << " " << protocol->getHeader()->src << " " << protocol->getHeader()->dest << " " << protocol->getHeader()->seq << " "  << std::endl;
+
+			/*
+			int cont = 30;
+			while (cont--) {
+				   char buffer[4] = "ser";
+				   send(_socket_client, &buffer, strlen(buffer), 0);
+				   sleep(10);
+			}*/
+        }
+
+    private:
+
+        void handleReceive(char* buffer)
+        {
+            std::cout<< "areaeae: " << buffer << std::endl;
         }
 
 
