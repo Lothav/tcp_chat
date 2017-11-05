@@ -21,6 +21,11 @@ namespace Common {
 
     public:
 
+		enum EVENT_TYPE {
+			KEYBOARD 	=  0x1 << 0,
+			RECEIVE 	= 0x1 << 1,
+			ACCEPT 		= 0x1 << 2
+		};
 
     protected:
 
@@ -38,7 +43,7 @@ namespace Common {
             return socket_;
         }
 
-		void tcpSelect(int socket_, bool watch_stdin=false, const std::function<void(Protocol*)>& handler = nullptr)
+		void tcpSelect(int m_socket_, std::vector<int>c_sockets_ = {}, const std::function<void(int, int)>& handler = nullptr)
 		{
 			char buf[35];
 
@@ -47,18 +52,22 @@ namespace Common {
 
 			FD_ZERO(&master);
 			FD_ZERO(&rfds);
-			FD_SET(socket_, &master);
-			if (watch_stdin) {
-				FD_SET(STDIN_FILENO, &master);
+
+			int nfds = m_socket_;
+			FD_SET(m_socket_, &master);
+			FD_SET(STDIN_FILENO, &master);
+			for (auto c_socket : c_sockets_) {
+				nfds = c_socket > nfds ? c_socket : nfds;
+				FD_SET(c_socket, &master);
 			}
 
 			struct timeval tv = {};
 			tv.tv_sec = 5;
 			tv.tv_usec = 0;
 
-			while(true) {
+			while (true) {
 				rfds = master;
-				int retval = select(socket_+1, &rfds, nullptr, nullptr, &tv);
+				int retval = select(nfds+1, &rfds, nullptr, nullptr, &tv);
 				if (retval > 0) {
 					if (FD_ISSET(STDIN_FILENO, &rfds)) {
 						if (fgets(buf, 35, stdin)) {
@@ -67,14 +76,17 @@ namespace Common {
 							// handler(buf);
 						}
 					}
-					if (FD_ISSET(socket_, &rfds)) {
-						Common::Protocol* protocol_ = this->receive(socket_);
-						handler(protocol_);
+					if (FD_ISSET(m_socket_, &rfds)) {
+						handler(EVENT_TYPE::ACCEPT | EVENT_TYPE::RECEIVE, m_socket_);
 					}
+
+					for (auto c_socket : c_sockets_) {
+						if (FD_ISSET(c_socket, &rfds)) {
+							handler(EVENT_TYPE::RECEIVE, c_socket);
+						}
+					}
+
 				} else {
-					std::cout << "retval failed: " << retval << std::endl;
-					std::cout << "socket disconnected: " << socket_ << std::endl;
-					close(socket_);
 					break;
 				}
 			}
