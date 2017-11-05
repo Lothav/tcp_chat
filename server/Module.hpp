@@ -45,15 +45,15 @@ namespace Server {
 
         std::vector<int> clients_sockets_ = {};
 
-        void handleEvent(int event_type, int socket_)
+        void handleEvent(int event_mask, int socket_)
         {
-            if ((event_type & Common::Socket::EVENT_TYPE::ACCEPT) == Common::Socket::EVENT_TYPE::ACCEPT) {
+            if ((event_mask & Common::Socket::EVENT_TYPE::ACCEPT) == Common::Socket::EVENT_TYPE::ACCEPT) {
                 struct sockaddr_in 	cli_addr = {};
                 socklen_t clilen = sizeof(cli_addr);
                 socket_ = accept(this->getSocket(), (struct sockaddr *)&cli_addr, &clilen);
             }
 
-            if ((event_type & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
+            if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
                 Common::Protocol* protocol_ = this->receive(socket_);
                 Common::header_str* header_ = protocol_->getHeader();
 

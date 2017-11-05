@@ -20,7 +20,7 @@ namespace Client {
     public:
         explicit Module(std::string port)
         {
-            int socket_server = this->getSocket();
+            int m_socket_ = this->getSocket();
 
             struct sockaddr_in dst = {};
             dst.sin_family  = AF_INET;
@@ -28,45 +28,22 @@ namespace Client {
             inet_aton(LOCAL_HOST, &dst.sin_addr);
 
             auto *sa_dst = (struct sockaddr *)&dst;
-            while(connect(socket_server, sa_dst, sizeof(dst)));
-            /*
+            while(connect(m_socket_, sa_dst, sizeof(dst)));
+            this->sayHi();
 
-            char buf[35];
+            this->tcpSelect(m_socket_, {}, [this](int event_mask, int socket_) {
+                this->handleEvent(event_mask, socket_);
+            });
+        }
 
-            fd_set master = {};
-            fd_set rfds = {};
 
-            FD_ZERO(&master);
-            FD_ZERO(&rfds);
+    private:
 
-            FD_SET(STDIN_FILENO, &master);
-            FD_SET(socket_server, &master);
+        void handleEvent(int event_mask, int socket_)
+        {
+            if ((event_mask & Common::Socket::EVENT_TYPE::ACCEPT) == Common::Socket::EVENT_TYPE::ACCEPT) {
 
-            struct timeval tv = {};
-            tv.tv_sec = 5;
-            tv.tv_usec = 0;
-
-            while(true) {
-                rfds = master;
-                int retval = select(socket_server+1, &rfds, nullptr, nullptr, &tv);
-                if (retval > 0) {
-                    if (FD_ISSET(STDIN_FILENO, &rfds)) {
-                        if (fgets(buf, 35, stdin)) {
-                            send(socket_server, buf, strlen(buf), 0);
-                            std::cout << "Eu: " << buf << std::endl;
-                        }
-                    }
-                    if (FD_ISSET(socket_server, &rfds)) {
-                        ssize_t ret = recv(socket_server, buf, 4, 0);
-                        std::cout << "João: " << buf << std::endl;
-                    }
-                } else {
-                    std::cout << "retval failed: " << retval << std::endl;
-                    std::cout << "socket disconnected: " << socket_server << std::endl;
-                    close(socket_server);
-                    break;
-                }
-            }*/
+            }
         }
 
         void sayHi ()
