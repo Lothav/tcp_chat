@@ -74,11 +74,23 @@ namespace Client {
                 switch (header_->type)
                 {
                     case Common::Protocol::TYPE::OK:
+
                         this->my_id_ = header_->dest;
                         break;
+
+                    case Common::Protocol::TYPE::ERRO:
+
+                        break;
+
+                    case Common::Protocol::TYPE::MSG:
+
+                        std::cout << protocol_->getMsg()->msg << std::endl;
+                        break;
+
                     default:
                         break;
                 }
+                delete protocol_;
             }
         }
 
