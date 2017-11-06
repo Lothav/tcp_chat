@@ -84,7 +84,7 @@ namespace Client {
 
                     case Common::Protocol::TYPE::MSG:
 
-                        std::cout << protocol_->getMsg()->msg << std::endl;
+                        std::cout << "Mensagem de " << protocol_->getHeader()->src << ":" <<protocol_->getMsg()->msg << std::endl;
                         break;
 
                     default:

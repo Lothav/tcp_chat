@@ -88,22 +88,20 @@ namespace Common {
 
         void tcpSend(int socket_, Common::Protocol protocol_)
         {
-			size_t send_size = 0;
-
 			bool hasMsg = protocol_.hasMsg();
 
 			protocol_.headerToNetworkOrder();
 			protocol_.msgToNetworkOrder();
 
 			if (hasMsg) {
-				send_size = sizeof(header_str) + sizeof(msg_str);
+				size_t send_size = sizeof(header_str) + sizeof(msg_str);
 				std::unique_ptr<char> buffer ((char *)malloc(send_size));
 				memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
 				memcpy(buffer.get()+sizeof(header_str), protocol_.getMsg(), sizeof(msg_str));
 
 				send(socket_, buffer.get(), send_size, 0);
 			} else {
-				send_size = sizeof(header_str);
+				size_t send_size = sizeof(header_str);
 				std::unique_ptr<char> buffer((char *) malloc(send_size));
 				memcpy(buffer.get(), protocol_.getHeader(), send_size);
 
@@ -120,7 +118,8 @@ namespace Common {
             if (recv_size > 0) {
                 return Common::Protocol::getProtocolFromBuffer(buffer.get());
             } else {
-                throw "asd";
+				close(socket);
+                throw "Failed to receive data";
             }
         }
 
