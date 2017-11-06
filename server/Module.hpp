@@ -13,7 +13,6 @@
 #include "../common/Protocol.hpp"
 
 #define TC_MAX_REQUESTS 5
-#define TC_INVALID_SOCKET -1
 
 namespace Server {
 
@@ -37,14 +36,13 @@ namespace Server {
 
             listen(m_socket, TC_MAX_REQUESTS);
 
-            this->tcpSelect(m_socket, this->clients_sockets_, [this](int event_mask, int socket_) {
+            this->tcpSelect(m_socket, [this](int event_mask, int socket_) {
                 this->handleEvent(event_mask, socket_);
             });
         }
 
     private:
 
-        std::vector<int> clients_sockets_ = {};
 
         void handleEvent(int event_mask, int socket_)
         {
@@ -86,7 +84,7 @@ namespace Server {
                         if (header_->dest == 0) {
                             // Broadcast
                             for (auto clients_sockets : clients_sockets_) {
-                                if (clients_sockets_[header_->dest] < 0) {
+                                if (clients_sockets != TC_INVALID_SOCKET && clients_sockets != clients_sockets_[header_->src]) {
                                     this->tcpSend(clients_sockets, protocol_);
                                 }
                             }

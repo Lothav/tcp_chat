@@ -31,7 +31,7 @@ namespace Client {
             while(connect(m_socket_, sa_dst, sizeof(dst)));
             this->sayHi();
 
-            this->tcpSelect(m_socket_, {}, [this](int event_mask, int socket_) {
+            this->tcpSelect(m_socket_, [this](int event_mask, int socket_) {
                 this->handleEvent(event_mask, socket_);
             });
         }
