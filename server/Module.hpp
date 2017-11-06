@@ -13,6 +13,7 @@
 #include "../common/Protocol.hpp"
 
 #define TC_MAX_REQUESTS 5
+#define TC_INVALID_SOCKET -1
 
 namespace Server {
 
@@ -71,6 +72,18 @@ namespace Server {
                         this->tcpSend(socket_, protocol_);
 
                         break;
+                    case Common::Protocol::TYPE::FLW:
+
+                        clients_sockets_[header_->src] = TC_INVALID_SOCKET;
+                        header_->type = Common::Protocol::TYPE::OK;
+                        protocol_->setHeader(header_);
+                        this->tcpSend(socket_, protocol_);
+                        close(socket_);
+
+                    case Common::Protocol::TYPE::MSG:
+
+
+
                     default:
                         break;
                 }

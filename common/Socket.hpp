@@ -22,7 +22,7 @@ namespace Common {
     public:
 
 		enum EVENT_TYPE {
-			KEYBOARD 	=  0x1 << 0,
+			KEYBOARD 	= 0x1 << 0,
 			RECEIVE 	= 0x1 << 1,
 			ACCEPT 		= 0x1 << 2
 		};
@@ -79,8 +79,6 @@ namespace Common {
 							handler(EVENT_TYPE::RECEIVE, c_socket);
 						}
 					}
-				} else {
-					break;
 				}
 			}
 		}

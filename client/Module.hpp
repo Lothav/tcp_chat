@@ -40,6 +40,7 @@ namespace Client {
     private:
 
         uint16_t my_id_ = 0;
+        uint16_t seq_counter = 0;
 
         void handleEvent(int event_mask, int socket_) {
             if ((event_mask & Common::Socket::EVENT_TYPE::KEYBOARD) == Common::Socket::EVENT_TYPE::KEYBOARD) {
@@ -50,7 +51,7 @@ namespace Client {
                     auto* header_ = new Common::header_str;
                     header_->type = Common::Protocol::MSG;
                     header_->dest = 0;
-                    header_->seq  = 0;
+                    header_->seq  = seq_counter;
                     header_->src  = this->my_id_;
 
                     auto* msg_ = new Common::msg_str;
@@ -62,6 +63,8 @@ namespace Client {
                     protocol->setMsg(msg_);
 
                     this->tcpSend(socket_, protocol.get());
+
+                    this->seq_counter++;
                 }
             }
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
@@ -87,6 +90,7 @@ namespace Client {
             header_hi->dest = htons(0);
             header_hi->seq  = htons(0);
             send(this->getSocket(), header_hi.get(), sizeof(Common::header_str), 0);
+            this->seq_counter++;
         }
     };
 
