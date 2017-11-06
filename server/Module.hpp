@@ -70,8 +70,8 @@ namespace Server {
                         protocol_->setHeader(header_);
 
                         this->tcpSend(socket_, protocol_);
-
                         break;
+
                     case Common::Protocol::TYPE::FLW:
 
                         clients_sockets_[header_->src] = TC_INVALID_SOCKET;
@@ -79,12 +79,41 @@ namespace Server {
                         protocol_->setHeader(header_);
                         this->tcpSend(socket_, protocol_);
                         close(socket_);
+                        break;
 
                     case Common::Protocol::TYPE::MSG:
 
-
+                        if (header_->dest == 0) {
+                            // Broadcast
+                            for (auto clients_sockets : clients_sockets_) {
+                                if (clients_sockets_[header_->dest] < 0) {
+                                    this->tcpSend(clients_sockets, protocol_);
+                                }
+                            }
+                            header_->type = Common::Protocol::TYPE::OK;
+                            protocol_->setHeader(header_);
+                            this->tcpSend(socket_, protocol_);
+                        } else {
+                            if(header_->dest < 0 || header_->dest > clients_sockets_.size() || clients_sockets_[header_->dest] < 0) {
+                                // invalid destination
+                                header_->type = Common::Protocol::TYPE::ERRO;
+                                protocol_->setHeader(header_);
+                                this->tcpSend(socket_, protocol_);
+                            } else {
+                                this->tcpSend(clients_sockets_[header_->dest], protocol_);
+                                header_->type = Common::Protocol::TYPE::OK;
+                                protocol_->setHeader(header_);
+                                this->tcpSend(socket_, protocol_);
+                            }
+                        }
+                        break;
 
                     default:
+
+                        std::cout << "Invalid Type";
+                        header_->type = Common::Protocol::TYPE::ERRO;
+                        protocol_->setHeader(header_);
+                        this->tcpSend(socket_, protocol_);
                         break;
                 }
             }
