@@ -67,7 +67,7 @@ namespace Server {
                         header_->type = Common::Protocol::TYPE::OK;
                         header_->dest = static_cast<uint16_t>(this->clients_sockets_.size());
                         protocol_->setHeader(header_);
-                        
+
                         this->tcpSend(socket_, protocol_);
 
                         break;
