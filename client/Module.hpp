@@ -9,13 +9,17 @@
 #include <arpa/inet.h>
 #include <zconf.h>
 #include <cstring>
+#include <thread>
 #include "../common/Socket.hpp"
 #include "../common/Protocol.hpp"
+#include "UserInterface.hpp"
 
 namespace Client {
 
     class Module : Common::Socket
     {
+	private:
+		std::thread loading_;
 
     public:
         explicit Module(std::string port)
@@ -26,6 +30,12 @@ namespace Client {
             dst.sin_family  = AF_INET;
             dst.sin_port    = htons(static_cast<uint16_t>(std::stoi(port.c_str())));
             inet_aton(LOCAL_HOST, &dst.sin_addr);
+
+            std::string connecting ("Conectando em ");
+            connecting += LOCAL_HOST;
+            connecting += ':';
+            connecting += port.c_str();
+			loading_ = std::thread (Client::UserInterface::withLoading, connecting);
 
             auto *sa_dst = (struct sockaddr *)&dst;
             while(connect(m_socket_, sa_dst, sizeof(dst)));
@@ -76,6 +86,14 @@ namespace Client {
                     case Common::Protocol::TYPE::OK:
 
                         this->my_id_ = header_->dest;
+                        if(header_->seq == 0) {
+							loading_.join();
+                            std::cout << "Conexao realizada com sucesso! Seu id e: "<< this->my_id_ << std::endl << std::endl;
+                            std::cout << "Escolha uma das opcoes:" << std::endl;
+                            std::cout << "\tM : enviar uma mensagem para todos" << std::endl;
+                            std::cout << "\tL : ver lista de usuarios conectados" << std::endl;
+                            std::cout << "\tS : sair" << std::endl;
+                        }
                         break;
 
                     case Common::Protocol::TYPE::ERRO:

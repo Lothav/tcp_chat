@@ -4,7 +4,8 @@ project (tcp_chat)
 file(GLOB_RECURSE COMMON_HEADER_FILES ./common/*.hpp)
 
 file(GLOB_RECURSE CLIENT_HEADER_FILES ./client/*.hpp)
-add_executable(client ./client/main.cpp ${COMMON_HEADER_FILES} ${CLIENT_HEADER_FILES})
+add_executable(client ./client/main.cpp ${COMMON_HEADER_FILES} ${CLIENT_HEADER_FILES} client/UserInterface.hpp)
+target_link_libraries(client pthread)
 
 file(GLOB_RECURSE SERVER_HEADER_FILES ./server/*.hpp)
 add_executable(server ./server/main.cpp ${COMMON_HEADER_FILES} ${SERVER_HEADER_FILES})
