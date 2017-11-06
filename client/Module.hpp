@@ -62,7 +62,7 @@ namespace Client {
                     protocol->setHeader(header_);
                     protocol->setMsg(msg_);
 
-                    this->tcpSend(socket_, protocol.get());
+                    this->tcpSend(socket_, *protocol.get());
 
                     this->seq_counter++;
                 }

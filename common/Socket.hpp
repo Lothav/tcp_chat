@@ -86,23 +86,26 @@ namespace Common {
 			}
 		}
 
-        void tcpSend(int socket_, Common::Protocol* protocol_)
+        void tcpSend(int socket_, Common::Protocol protocol_)
         {
-			protocol_->headerToNetworkOrder();
-			protocol_->msgToNetworkOrder();
-
 			size_t send_size = 0;
-			if (protocol_->hasMsg()) {
+
+			bool hasMsg = protocol_.hasMsg();
+
+			protocol_.headerToNetworkOrder();
+			protocol_.msgToNetworkOrder();
+
+			if (hasMsg) {
 				send_size = sizeof(header_str) + sizeof(msg_str);
 				std::unique_ptr<char> buffer ((char *)malloc(send_size));
-				memcpy(buffer.get(), protocol_->getHeader(), sizeof(header_str));
-				memcpy(buffer.get()+sizeof(header_str), protocol_->getMsg(), sizeof(msg_str));
+				memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
+				memcpy(buffer.get()+sizeof(header_str), protocol_.getMsg(), sizeof(msg_str));
 
 				send(socket_, buffer.get(), send_size, 0);
 			} else {
 				send_size = sizeof(header_str);
 				std::unique_ptr<char> buffer((char *) malloc(send_size));
-				memcpy(buffer.get(), protocol_->getHeader(), send_size);
+				memcpy(buffer.get(), protocol_.getHeader(), send_size);
 
 				send(socket_, buffer.get(), send_size, 0);
 			}

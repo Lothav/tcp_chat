@@ -95,7 +95,7 @@ namespace Common {
 
         bool hasMsg()
         {
-            return this->_header.type == 5;
+            return this->_header.type == Common::Protocol::TYPE::MSG;
         }
 
         struct header_str* getHeader()
