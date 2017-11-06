@@ -56,8 +56,6 @@ namespace Server {
                 Common::Protocol* protocol_ = this->receive(socket_);
                 Common::header_str* header_ = protocol_->getHeader();
 
-                std::cout<< "type: " << header_->type << std::endl;
-
                 switch (header_->type)
                 {
                     case Common::Protocol::TYPE::OI:

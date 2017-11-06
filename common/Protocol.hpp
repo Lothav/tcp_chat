@@ -88,8 +88,6 @@ namespace Common {
 				protocol->msgToHostOrder();
 			}
 
-			std::cout << protocol->getHeader()->type << " " << protocol->getHeader()->src << " " << protocol->getHeader()->dest << " " << protocol->getHeader()->seq << " "  << std::endl;
-
 			return protocol;
 		}
 

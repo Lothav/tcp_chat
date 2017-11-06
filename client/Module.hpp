@@ -44,9 +44,9 @@ namespace Client {
 
         void handleEvent(int event_mask, int socket_) {
             if ((event_mask & Common::Socket::EVENT_TYPE::KEYBOARD) == Common::Socket::EVENT_TYPE::KEYBOARD) {
-                char buf[35];
-                if (fgets(buf, 35, stdin)) {
-                    std::cout << "Eu: " << buf << std::endl;
+                char buf[401];
+                if (fgets(buf, 401, stdin)) {
+                    std::cout << "Eu (" << this->my_id_ << "): " << buf << std::endl;
 
                     auto* header_ = new Common::header_str;
                     header_->type = Common::Protocol::MSG;
@@ -70,7 +70,7 @@ namespace Client {
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
                 Common::Protocol* protocol_ = this->receive(socket_);
                 Common::header_str* header_ = protocol_->getHeader();
-                std::cout<< "type: " << header_->type << std::endl;
+
                 switch (header_->type)
                 {
                     case Common::Protocol::TYPE::OK:

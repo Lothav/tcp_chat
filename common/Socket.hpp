@@ -86,7 +86,7 @@ namespace Common {
 			}
 		}
 
-        void tcpSend(int socket_, Common::Protocol protocol_)
+        void tcpSend (int socket_, Common::Protocol protocol_)
         {
 			bool hasMsg = protocol_.hasMsg();
 
@@ -122,7 +122,6 @@ namespace Common {
                 throw "Failed to receive data";
             }
         }
-
     };
 }
 
