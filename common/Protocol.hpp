@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <array>
-#include <netinet/in.h>
 
 namespace Common {
 
@@ -28,6 +27,7 @@ namespace Common {
         struct msg_str _msg;
 
     public:
+
         Protocol(): _header({}), _msg({}) {}
 
 		enum TYPE : uint16_t {

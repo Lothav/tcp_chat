@@ -18,8 +18,6 @@ namespace Client {
 
     class Module : Common::Socket
     {
-	private:
-		std::thread loading_;
 
     public:
         explicit Module(std::string port)
@@ -35,7 +33,7 @@ namespace Client {
             connecting += LOCAL_HOST;
             connecting += ':';
             connecting += port.c_str();
-			loading_ = std::thread (Client::UserInterface::withLoading, connecting);
+            std::cout << connecting << std::endl;
 
             auto *sa_dst = (struct sockaddr *)&dst;
             while(connect(m_socket_, sa_dst, sizeof(dst)));
@@ -54,27 +52,54 @@ namespace Client {
 
         void handleEvent(int event_mask, int socket_) {
             if ((event_mask & Common::Socket::EVENT_TYPE::KEYBOARD) == Common::Socket::EVENT_TYPE::KEYBOARD) {
-                char buf[401];
-                if (fgets(buf, 401, stdin)) {
-                    std::cout << "Eu (" << this->my_id_ << "): " << buf << std::endl;
-
-                    auto* header_ = new Common::header_str;
-                    header_->type = Common::Protocol::MSG;
-                    header_->dest = 0;
-                    header_->seq  = seq_counter;
-                    header_->src  = this->my_id_;
-
-                    auto* msg_ = new Common::msg_str;
-                    msg_->C    = static_cast<uint16_t>(strlen(buf));
-                    strcpy(msg_->msg, buf);
-
+                char buf[405];
+                if (fgets(buf, 405, stdin)) {
+                    std::unique_ptr<Common::header_str> header_ (new Common::header_str);
                     std::unique_ptr<Common::Protocol> protocol (new Common::Protocol());
-                    protocol->setHeader(header_);
-                    protocol->setMsg(msg_);
 
-                    this->tcpSend(socket_, *protocol.get());
+                    switch (buf[0])
+                    {
+                        case 'M':
+                        {
+                            std::cout << "Eu (" << this->my_id_ << "): " << buf << std::endl;
 
-                    this->seq_counter++;
+                            header_->type = Common::Protocol::MSG;
+                            header_->dest = buf[1];
+                            header_->seq = seq_counter;
+                            header_->src = this->my_id_;
+
+                            std::unique_ptr<Common::msg_str> msg_(new Common::msg_str);
+                            msg_->C = static_cast<uint16_t>(strlen(buf));
+                            strcpy(msg_->msg, buf);
+
+                            protocol->setHeader(header_.get());
+                            protocol->setMsg(msg_.get());
+
+                            this->tcpSend(socket_, *protocol.get());
+
+                            this->seq_counter++;
+                        }
+                            break;
+
+                        case 'L':
+                        {
+                            header_->type = Common::Protocol::CLIST;
+                            header_->dest = 0;
+                            header_->seq = seq_counter;
+                            header_->src = this->my_id_;
+
+                            protocol->setHeader(header_.get());
+
+                            this->tcpSend(socket_, *protocol.get());
+                        }
+                            break;
+
+                        default:
+
+                            std::cout << buf[0] << " nao e uma opcao valida" << std::endl;
+                    }
+
+
                 }
             }
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
@@ -87,11 +112,10 @@ namespace Client {
 
                         this->my_id_ = header_->dest;
                         if(header_->seq == 0) {
-							loading_.join();
                             std::cout << "Conexao realizada com sucesso! Seu id e: "<< this->my_id_ << std::endl << std::endl;
                             std::cout << "Escolha uma das opcoes:" << std::endl;
-                            std::cout << "\tM : enviar uma mensagem para todos" << std::endl;
                             std::cout << "\tL : ver lista de usuarios conectados" << std::endl;
+                            std::cout << "\tM <id> <mensagem>: enviar mensagem para usuário. Id 0 envia para todos" << std::endl;
                             std::cout << "\tS : sair" << std::endl;
                         }
                         break;

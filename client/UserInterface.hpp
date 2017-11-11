@@ -19,21 +19,6 @@ namespace Client
 
 	public:
 
-		static void withLoading(std::string msg)
-		{
-			std::cout << "Loading Please Wait";
-			while (true)
-			{
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-				std::cout << "." << std::flush;
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-				std::cout << "." << std::flush;
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-				std::cout << "." << std::flush;
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-				std::cout << "\b\b\b   \b\b\b" << std::flush;
-			}
-		}
 
 
 	};
