@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <zconf.h>
 #include <cstring>
+#include <sstream>
 #include "../common/Socket.hpp"
 #include "../common/Protocol.hpp"
 
@@ -55,6 +56,7 @@ namespace Server {
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
                 Common::Protocol* protocol_ = this->receive(socket_);
                 Common::header_str* header_ = protocol_->getHeader();
+                Common::msg_str* msg_       = protocol_->getMsg();
 
                 switch (header_->type)
                 {
@@ -105,12 +107,26 @@ namespace Server {
                         }
                         break;
 
+                    case Common::Protocol::TYPE::CREQ:
+
+                        header_->type = Common::Protocol::TYPE::CLIST;
+                        header_->dest = header_->src;
+                        header_->src  = 0;
+
+                        msg_->C = static_cast<uint16_t>( clients_sockets_.size() );
+                        memcpy(msg_->msg, clients_sockets_.data(), clients_sockets_.size()*2);
+
+                        this->tcpSend(socket_, *protocol_);
+
+                        break;
+
                     default:
 
                         std::cout << "Invalid Type";
                         header_->type = Common::Protocol::TYPE::ERRO;
                         protocol_->setHeader(header_);
                         this->tcpSend(socket_, *protocol_);
+
                         break;
                 }
                 delete protocol_;

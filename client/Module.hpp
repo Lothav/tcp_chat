@@ -83,7 +83,7 @@ namespace Client {
 
                         case 'L':
                         {
-                            header_->type = Common::Protocol::CLIST;
+                            header_->type = Common::Protocol::CREQ;
                             header_->dest = 0;
                             header_->seq = seq_counter;
                             header_->src = this->my_id_;
@@ -127,6 +127,12 @@ namespace Client {
                     case Common::Protocol::TYPE::MSG:
 
                         std::cout << "Mensagem de " << protocol_->getHeader()->src << ":" <<protocol_->getMsg()->msg << std::endl;
+                        break;
+
+                    case Common::Protocol::TYPE::CLIST:
+
+                        std::cout << protocol_->getMsg()->msg << std::endl;
+
                         break;
 
                     default:
