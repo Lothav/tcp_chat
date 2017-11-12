@@ -7,28 +7,30 @@
 namespace Common {
 
 
-    struct header_str {
-        uint16_t type;
-        uint16_t src;
-        uint16_t dest;
-        uint16_t seq;
-    };
+	struct header_str {
+		uint16_t type;
+		uint16_t src;
+		uint16_t dest;
+		uint16_t seq;
+	};
 
-    struct msg_str {
-        uint16_t C;
-        char msg[401];
-    };
+	template <typename T>
+	struct msg_str {
+		uint16_t C;
+		T text[405];
+	};
 
-    class Protocol {
+	class Protocol {
 
-    private:
+	private:
 
-        struct header_str _header;
-        struct msg_str _msg;
+		struct header_str 					header_;
+		struct msg_str<char> 	msg_str_;
+		struct msg_str<uint16_t> 		msg_num_;
 
-    public:
+	public:
 
-        Protocol(): _header({}), _msg({}) {}
+		Protocol(): header_({}), msg_str_({}), msg_num_({}) {}
 
 		enum TYPE : uint16_t {
 			OK 		= 1,
@@ -40,40 +42,74 @@ namespace Common {
 			CLIST 	= 7
 		};
 
+		enum ORDER : uint8_t {
+			NETWORK_TO_HOST,
+			HOST_TO_NETWORK
+		};
+
+		// Header setter and Getter
+
 		void setHeader(struct header_str* header)
 		{
-			this->_header = *header;
+			this->header_ = *header;
 		}
 
-		void setMsg (struct msg_str* msg)
+		struct header_str* getHeader()
 		{
-			this->_msg = *msg;
+			return &this->header_;
 		}
 
-        void headerToHostOrder()
+		// Message setters and Getters
+
+		void setMsg (struct msg_str<uint16_t>* msg)
+		{
+			this->msg_num_ = *msg;
+		}
+
+		void setMsg (struct msg_str<char>* msg)
+		{
+			this->msg_str_ = *msg;
+		}
+
+		void getMsg(msg_str<char>** msg)
+		{
+			*msg = &this->msg_str_;
+		}
+
+		void getMsg(msg_str<uint16_t>** msg)
+		{
+			*msg = &this->msg_num_;
+		}
+
+		// Convert functions network to host / host to network
+
+
+        void convertHeaderOrder(ORDER network_order)
         {
-            this->_header.type  = ntohs(this->_header.type);
-            this->_header.src   = ntohs(this->_header.src);
-            this->_header.dest  = ntohs(this->_header.dest);
-            this->_header.seq   = ntohs(this->_header.seq);
+            auto fn = network_order == ORDER::NETWORK_TO_HOST ? ntohs : htons;
+
+            this->header_.type  = fn(this->header_.type);
+            this->header_.src   = fn(this->header_.src);
+            this->header_.dest  = fn(this->header_.dest);
+            this->header_.seq   = fn(this->header_.seq);
         }
 
-        void msgToHostOrder()
-        {
-            this->_msg.C = ntohs(this->_msg.C);
-        }
-
-		void headerToNetworkOrder()
+		void convertMsgOrder(ORDER network_order)
 		{
-			this->_header.type  = htons(this->_header.type);
-			this->_header.src   = htons(this->_header.src);
-			this->_header.dest  = htons(this->_header.dest);
-			this->_header.seq   = htons(this->_header.seq);
-		}
+			auto fn = network_order == ORDER::NETWORK_TO_HOST ? ntohs : htons;
 
-		void msgToNetworkOrder()
-		{
-			this->_msg.C = htons(this->_msg.C);
+			if(this->hasMsg()) {
+				if (this->msgTypeNumber()) {
+					msg_str<uint16_t>* msg = &this->msg_num_;
+					msg->C = fn(msg->C);
+					for(int i = 0; i < msg->C; i ++){
+						msg->text[i] = fn(msg->text[i]);
+					}
+				} else {
+					msg_str<char>* msg = &this->msg_str_;
+					msg->C = fn(msg->C);
+				}
+			}
 		}
 
 		static Protocol* getProtocolFromBuffer(const char* buffer)
@@ -81,31 +117,39 @@ namespace Common {
 			auto protocol = new Common::Protocol();
 
 			std::memcpy(protocol->getHeader(), buffer, sizeof(Common::header_str));
-			protocol->headerToHostOrder();
+            protocol->convertHeaderOrder(ORDER::NETWORK_TO_HOST);
 
-			if (protocol->hasMsg()) {
-				std::memcpy(protocol->getMsg(), buffer+sizeof(Common::header_str), sizeof(Common::msg_str));
-				protocol->msgToHostOrder();
+            if (protocol->hasMsg()) {
+				if(protocol->msgTypeNumber()) {
+					msg_str <uint16_t>* msg_ = nullptr;
+					protocol->getMsg(&msg_);
+					std::memcpy(msg_, buffer + sizeof(Common::header_str), sizeof(Common::msg_str <uint16_t>));
+				} else {
+					msg_str <char>* msg_ = nullptr;
+					protocol->getMsg(&msg_);
+					std::memcpy(msg_, buffer + sizeof(Common::header_str), sizeof(Common::msg_str <char>));
+				}
 			}
+			protocol->convertMsgOrder(ORDER::NETWORK_TO_HOST);
 
 			return protocol;
 		}
 
-        bool hasMsg()
-        {
-            return this->_header.type == Common::Protocol::TYPE::MSG;
-        }
+		bool hasMsg()
+		{
+			return this->header_.type == Common::Protocol::TYPE::MSG ||
+					this->header_.type == Common::Protocol::TYPE::CLIST ||
+					ntohs(this->header_.type) == Common::Protocol::TYPE::MSG ||
+					ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;
+		}
 
-        struct header_str* getHeader()
-        {
-            return &this->_header;
-        }
+		bool msgTypeNumber()
+		{
+			return this->header_.type == Common::Protocol::TYPE::CLIST ||
+					ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;;
+		}
 
-        struct msg_str* getMsg()
-        {
-            return &this->_msg;
-        }
-    };
+	};
 
 }
 

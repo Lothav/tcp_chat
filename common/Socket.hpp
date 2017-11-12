@@ -89,17 +89,37 @@ namespace Common {
         void tcpSend (int socket_, Common::Protocol protocol_)
         {
 			bool hasMsg = protocol_.hasMsg();
-
-			protocol_.headerToNetworkOrder();
-			protocol_.msgToNetworkOrder();
+			protocol_.convertHeaderOrder(Protocol::ORDER::HOST_TO_NETWORK);
 
 			if (hasMsg) {
-				size_t send_size = sizeof(header_str) + sizeof(msg_str);
-				std::unique_ptr<char> buffer ((char *)malloc(send_size));
-				memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
-				memcpy(buffer.get()+sizeof(header_str), protocol_.getMsg(), sizeof(msg_str));
 
-				send(socket_, buffer.get(), send_size, 0);
+                protocol_.convertMsgOrder(Protocol::ORDER::HOST_TO_NETWORK);
+
+                if (protocol_.msgTypeNumber()) {
+
+                    size_t send_size = sizeof(header_str) + sizeof(msg_str<std::uint16_t>);
+                    std::unique_ptr<char> buffer ((char *)malloc(send_size));
+                    memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
+                
+                    Common::msg_str<uint16_t>* str;
+                    protocol_.getMsg(&str);
+                    memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<std::uint16_t>));
+
+                    send(socket_, buffer.get(), send_size, 0);
+
+                } else {
+
+                    size_t send_size = sizeof(header_str) + sizeof(msg_str<char>);
+                    std::unique_ptr<char> buffer ((char *)malloc(send_size));
+                    memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
+                    
+                    Common::msg_str<char>* str = nullptr;
+                    protocol_.getMsg(&str);
+                    memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<char>));
+
+                    send(socket_, buffer.get(), send_size, 0);
+                }
+
 			} else {
 				size_t send_size = sizeof(header_str);
 				std::unique_ptr<char> buffer((char *) malloc(send_size));
@@ -111,7 +131,8 @@ namespace Common {
 
 		Common::Protocol* receive (int socket)
         {
-            size_t buffer_size = sizeof(Common::header_str) + sizeof(Common::msg_str);
+            //@TODO FIX SIZEOF MSG
+            size_t buffer_size = sizeof(Common::header_str) + sizeof(Common::msg_str<uint16_t>);
             std::unique_ptr<char> buffer ((char *)malloc(buffer_size));
             ssize_t recv_size = recv(socket, buffer.get(), buffer_size, 0);
 

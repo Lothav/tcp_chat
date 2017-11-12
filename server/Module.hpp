@@ -56,7 +56,6 @@ namespace Server {
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
                 Common::Protocol* protocol_ = this->receive(socket_);
                 Common::header_str* header_ = protocol_->getHeader();
-                Common::msg_str* msg_       = protocol_->getMsg();
 
                 switch (header_->type)
                 {
@@ -108,18 +107,21 @@ namespace Server {
                         break;
 
                     case Common::Protocol::TYPE::CREQ:
-
+                    {
                         header_->type = Common::Protocol::TYPE::CLIST;
                         header_->dest = header_->src;
-                        header_->src  = 0;
+                        header_->src = 0;
 
-                        msg_->C = static_cast<uint16_t>( clients_sockets_.size() );
-                        memcpy(msg_->msg, clients_sockets_.data(), clients_sockets_.size()*2);
+                        Common::msg_str<uint16_t>* msg_;
+                        protocol_->getMsg(&msg_);
+                        memset(msg_, '\0', sizeof(Common::msg_str<uint16_t>));
+                        msg_->C = static_cast<uint16_t>( clients_sockets_.size()-1);
+                        memcpy(msg_->text, clients_sockets_.data()+1, (clients_sockets_.size()-1));
 
                         this->tcpSend(socket_, *protocol_);
 
                         break;
-
+                    }
                     default:
 
                         std::cout << "Invalid Type";

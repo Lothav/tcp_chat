@@ -20,6 +20,7 @@ namespace Client {
     {
 
     public:
+
         explicit Module(std::string port)
         {
             int m_socket_ = this->getSocket();
@@ -68,9 +69,9 @@ namespace Client {
                             header_->seq = seq_counter;
                             header_->src = this->my_id_;
 
-                            std::unique_ptr<Common::msg_str> msg_(new Common::msg_str);
+                            std::unique_ptr<Common::msg_str<char>> msg_(new Common::msg_str<char>);
                             msg_->C = static_cast<uint16_t>(strlen(buf));
-                            strcpy(msg_->msg, buf);
+                            strcpy(msg_->text, buf);
 
                             protocol->setHeader(header_.get());
                             protocol->setMsg(msg_.get());
@@ -98,8 +99,6 @@ namespace Client {
 
                             std::cout << buf[0] << " nao e uma opcao valida" << std::endl;
                     }
-
-
                 }
             }
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
@@ -126,13 +125,24 @@ namespace Client {
 
                     case Common::Protocol::TYPE::MSG:
 
-                        std::cout << "Mensagem de " << protocol_->getHeader()->src << ":" <<protocol_->getMsg()->msg << std::endl;
+                        Common::msg_str<char>* msg_tex;
+                        protocol_->getMsg(&msg_tex);
+
+                        std::cout << "Mensagem de " << protocol_->getHeader()->src << ":" << msg_tex->text << std::endl;
                         break;
 
                     case Common::Protocol::TYPE::CLIST:
+                    {
 
-                        std::cout << protocol_->getMsg()->msg << std::endl;
+                        Common::msg_str<uint16_t>*msg_num;
+                        protocol_->getMsg(&msg_num);
 
+                        int i = 0;
+                        for (; i < msg_num->C; i ++) {
+                            std::cout << msg_num->text[i];
+                        }
+                        std::cout  << std::endl;
+                    }
                         break;
 
                     default:
