@@ -12,7 +12,7 @@
 #include "Protocol.hpp"
 
 #define LOCAL_HOST "127.0.0.1"
-#define TC_INVALID_SOCKET -1
+#define TC_INVALID_SOCKET 0
 
 namespace Common {
 
@@ -30,7 +30,7 @@ namespace Common {
 
     protected:
 
-		std::vector<int> clients_sockets_ = {TC_INVALID_SOCKET};
+		std::vector<uint16_t > clients_sockets_ = {TC_INVALID_SOCKET};
 
 		Socket()
         {
@@ -86,23 +86,23 @@ namespace Common {
 			}
 		}
 
-        void tcpSend (int socket_, Common::Protocol protocol_)
+        void tcpSend (int socket_, std::shared_ptr<Common::Protocol> protocol_)
         {
-			bool hasMsg = protocol_.hasMsg();
-			protocol_.convertHeaderOrder(Protocol::ORDER::HOST_TO_NETWORK);
+			bool hasMsg = protocol_->hasMsg();
+			protocol_->convertHeaderOrder(Protocol::ORDER::HOST_TO_NETWORK);
 
 			if (hasMsg) {
 
-                protocol_.convertMsgOrder(Protocol::ORDER::HOST_TO_NETWORK);
+                protocol_->convertMsgOrder(Protocol::ORDER::HOST_TO_NETWORK);
 
-                if (protocol_.msgTypeNumber()) {
+                if (protocol_->msgTypeNumber()) {
 
                     size_t send_size = sizeof(header_str) + sizeof(msg_str<std::uint16_t>);
                     std::unique_ptr<char> buffer ((char *)malloc(send_size));
-                    memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
+                    memcpy(buffer.get(), protocol_->getHeader(), sizeof(header_str));
                 
                     Common::msg_str<uint16_t>* str;
-                    protocol_.getMsg(&str);
+                    protocol_->getMsg(&str);
                     memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<std::uint16_t>));
 
                     send(socket_, buffer.get(), send_size, 0);
@@ -111,10 +111,10 @@ namespace Common {
 
                     size_t send_size = sizeof(header_str) + sizeof(msg_str<char>);
                     std::unique_ptr<char> buffer ((char *)malloc(send_size));
-                    memcpy(buffer.get(), protocol_.getHeader(), sizeof(header_str));
+                    memcpy(buffer.get(), protocol_->getHeader(), sizeof(header_str));
                     
                     Common::msg_str<char>* str = nullptr;
-                    protocol_.getMsg(&str);
+                    protocol_->getMsg(&str);
                     memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<char>));
 
                     send(socket_, buffer.get(), send_size, 0);
@@ -123,7 +123,7 @@ namespace Common {
 			} else {
 				size_t send_size = sizeof(header_str);
 				std::unique_ptr<char> buffer((char *) malloc(send_size));
-				memcpy(buffer.get(), protocol_.getHeader(), send_size);
+				memcpy(buffer.get(), protocol_->getHeader(), send_size);
 
 				send(socket_, buffer.get(), send_size, 0);
 			}

@@ -21,6 +21,7 @@ namespace Server {
     {
 
     public:
+
         explicit Module(char* port)
         {
             int size = 1;
@@ -44,7 +45,6 @@ namespace Server {
 
     private:
 
-
         void handleEvent(int event_mask, int socket_)
         {
             if ((event_mask & Common::Socket::EVENT_TYPE::ACCEPT) == Common::Socket::EVENT_TYPE::ACCEPT) {
@@ -54,7 +54,7 @@ namespace Server {
             }
 
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
-                Common::Protocol* protocol_ = this->receive(socket_);
+                std::shared_ptr<Common::Protocol> protocol_ (this->receive(socket_));
                 Common::header_str* header_ = protocol_->getHeader();
 
                 switch (header_->type)
@@ -67,7 +67,7 @@ namespace Server {
 
                         this->clients_sockets_.push_back(socket_);
 
-                        this->tcpSend(socket_, *protocol_);
+                        this->tcpSend(socket_, protocol_);
                         break;
 
                     case Common::Protocol::TYPE::FLW:
@@ -75,7 +75,7 @@ namespace Server {
                         clients_sockets_[header_->src] = TC_INVALID_SOCKET;
                         header_->type = Common::Protocol::TYPE::OK;
                         protocol_->setHeader(header_);
-                        this->tcpSend(socket_, *protocol_);
+                        this->tcpSend(socket_, protocol_);
                         close(socket_);
                         break;
 
@@ -85,23 +85,23 @@ namespace Server {
                             // Broadcast
                             for (auto clients_sockets : clients_sockets_) {
                                 if (clients_sockets != TC_INVALID_SOCKET && clients_sockets != clients_sockets_[header_->src]) {
-                                    this->tcpSend(clients_sockets, *protocol_);
+                                    this->tcpSend(clients_sockets, protocol_);
                                 }
                             }
                             header_->type = Common::Protocol::TYPE::OK;
                             protocol_->setHeader(header_);
-                            this->tcpSend(socket_, *protocol_);
+                            this->tcpSend(socket_, protocol_);
                         } else {
                             if(header_->dest < 0 || header_->dest > clients_sockets_.size() || clients_sockets_[header_->dest] < 0) {
                                 // invalid destination
                                 header_->type = Common::Protocol::TYPE::ERRO;
                                 protocol_->setHeader(header_);
-                                this->tcpSend(socket_, *protocol_);
+                                this->tcpSend(socket_, protocol_);
                             } else {
-                                this->tcpSend(clients_sockets_[header_->dest], *protocol_);
+                                this->tcpSend(clients_sockets_[header_->dest], protocol_);
                                 header_->type = Common::Protocol::TYPE::OK;
                                 protocol_->setHeader(header_);
-                                this->tcpSend(socket_, *protocol_);
+                                this->tcpSend(socket_, protocol_);
                             }
                         }
                         break;
@@ -114,11 +114,10 @@ namespace Server {
 
                         Common::msg_str<uint16_t>* msg_;
                         protocol_->getMsg(&msg_);
-                        memset(msg_, '\0', sizeof(Common::msg_str<uint16_t>));
                         msg_->C = static_cast<uint16_t>( clients_sockets_.size()-1);
-                        memcpy(msg_->text, clients_sockets_.data()+1, (clients_sockets_.size()-1));
+                        memcpy(msg_->text, clients_sockets_.data()+sizeof(uint16_t), sizeof(uint16_t)*(clients_sockets_.size()-1));
 
-                        this->tcpSend(socket_, *protocol_);
+                        this->tcpSend(socket_, protocol_);
 
                         break;
                     }
@@ -127,11 +126,10 @@ namespace Server {
                         std::cout << "Invalid Type";
                         header_->type = Common::Protocol::TYPE::ERRO;
                         protocol_->setHeader(header_);
-                        this->tcpSend(socket_, *protocol_);
+                        this->tcpSend(socket_, protocol_);
 
                         break;
                 }
-                delete protocol_;
             }
         }
 
