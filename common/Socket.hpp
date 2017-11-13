@@ -77,9 +77,11 @@ namespace Common {
 					if (FD_ISSET(m_socket_, &rfds)) {
 						handler(EVENT_TYPE::ACCEPT | EVENT_TYPE::RECEIVE, m_socket_);
 					}
-					for (auto c_socket : clients_sockets_) {
-						if (FD_ISSET(c_socket, &rfds)) {
-							handler(EVENT_TYPE::RECEIVE, c_socket);
+					if (clients_sockets_.size() > 1) {
+						for (auto c_socket : clients_sockets_) {
+							if (FD_ISSET(c_socket, &rfds)) {
+								handler(EVENT_TYPE::RECEIVE, c_socket);
+							}
 						}
 					}
 				}
@@ -101,7 +103,7 @@ namespace Common {
                     std::unique_ptr<char> buffer ((char *)malloc(send_size));
                     memcpy(buffer.get(), protocol_->getHeader(), sizeof(header_str));
                 
-                    Common::msg_str<uint16_t>* str;
+                    Common::msg_str<uint16_t>* str = nullptr;
                     protocol_->getMsg(&str);
                     memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<std::uint16_t>));
 

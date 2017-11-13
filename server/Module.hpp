@@ -115,7 +115,7 @@ namespace Server {
                         Common::msg_str<uint16_t>* msg_;
                         protocol_->getMsg(&msg_);
                         msg_->C = static_cast<uint16_t>( clients_sockets_.size()-1);
-                        memcpy(msg_->text, clients_sockets_.data()+sizeof(uint16_t), sizeof(uint16_t)*(clients_sockets_.size()-1));
+                        memcpy(&msg_->text, clients_sockets_.data()+1, sizeof(uint16_t)*(clients_sockets_.size()-1));
 
                         this->tcpSend(socket_, protocol_);
 

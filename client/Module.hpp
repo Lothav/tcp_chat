@@ -56,7 +56,7 @@ namespace Client {
                 char buf[405];
                 if (fgets(buf, 405, stdin)) {
                     std::unique_ptr<Common::header_str> header_ (new Common::header_str);
-                    std::unique_ptr<Common::Protocol> protocol (new Common::Protocol());
+                    std::shared_ptr<Common::Protocol> protocol (new Common::Protocol());
 
                     switch (buf[0])
                     {
@@ -76,7 +76,7 @@ namespace Client {
                             protocol->setHeader(header_.get());
                             protocol->setMsg(msg_.get());
 
-                            this->tcpSend(socket_, *protocol.get());
+                            this->tcpSend(socket_, protocol);
 
                             this->seq_counter++;
                         }
@@ -91,24 +91,23 @@ namespace Client {
 
                             protocol->setHeader(header_.get());
 
-                            this->tcpSend(socket_, *protocol.get());
+                            this->tcpSend(socket_, protocol);
                         }
                             break;
 
                         default:
-
                             std::cout << buf[0] << " nao e uma opcao valida" << std::endl;
                     }
                 }
             }
             if ((event_mask & Common::Socket::EVENT_TYPE::RECEIVE) == Common::Socket::EVENT_TYPE::RECEIVE) {
-                Common::Protocol* protocol_ = this->receive(socket_);
+                std::shared_ptr<Common::Protocol> protocol_ (this->receive(socket_));
                 Common::header_str* header_ = protocol_->getHeader();
 
                 switch (header_->type)
                 {
                     case Common::Protocol::TYPE::OK:
-
+                    {
                         this->my_id_ = header_->dest;
                         if(header_->seq == 0) {
                             std::cout << "Conexao realizada com sucesso! Seu id e: "<< this->my_id_ << std::endl << std::endl;
@@ -117,29 +116,30 @@ namespace Client {
                             std::cout << "\tM <id> <mensagem>: enviar mensagem para usuário. Id 0 envia para todos" << std::endl;
                             std::cout << "\tS : sair" << std::endl;
                         }
+                    }
                         break;
 
                     case Common::Protocol::TYPE::ERRO:
-
                         break;
 
                     case Common::Protocol::TYPE::MSG:
-
+                    {
                         Common::msg_str<char>* msg_tex;
                         protocol_->getMsg(&msg_tex);
 
                         std::cout << "Mensagem de " << protocol_->getHeader()->src << ":" << msg_tex->text << std::endl;
+                    }
                         break;
 
                     case Common::Protocol::TYPE::CLIST:
                     {
-
                         Common::msg_str<uint16_t>*msg_num;
                         protocol_->getMsg(&msg_num);
 
                         int i = 0;
+                        std::cout  << "Clientes disponíveis: ";
                         for (; i < msg_num->C; i ++) {
-                            std::cout << msg_num->text[i];
+                            std::cout << msg_num->text[i] << " ";
                         }
                         std::cout  << std::endl;
                     }
@@ -148,7 +148,6 @@ namespace Client {
                     default:
                         break;
                 }
-                delete protocol_;
             }
         }
 
