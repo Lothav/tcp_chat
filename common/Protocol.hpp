@@ -84,27 +84,28 @@ namespace Common {
 		// Convert functions network to host / host to network
 
 
-        void convertHeaderOrder(ORDER network_order)
-        {
-            auto fn = network_order == ORDER::NETWORK_TO_HOST ? ntohs : htons;
+		void convertHeaderOrder(ORDER network_order)
+		{
+			auto fn = network_order == ORDER::NETWORK_TO_HOST ? ntohs : htons;
 
-            this->header_.type  = fn(this->header_.type);
-            this->header_.src   = fn(this->header_.src);
-            this->header_.dest  = fn(this->header_.dest);
-            this->header_.seq   = fn(this->header_.seq);
-        }
+			this->header_.type  = fn(this->header_.type);
+			this->header_.src   = fn(this->header_.src);
+			this->header_.dest  = fn(this->header_.dest);
+			this->header_.seq   = fn(this->header_.seq);
+		}
 
 		void convertMsgOrder(ORDER network_order)
 		{
 			auto fn = network_order == ORDER::NETWORK_TO_HOST ? ntohs : htons;
 
-			if(this->hasMsg()) {
-				if (this->msgTypeNumber()) {
-					for(int i = 0; i < this->msg_num_.C; i ++){
-						this->msg_num_.text[i] = fn(this->msg_num_.text[i]);
-					}
+			if (this->msgTypeNumber()) {
+				if(network_order == ORDER::NETWORK_TO_HOST) this->msg_num_.C = ntohs(this->msg_num_.C);
+				for(int i = 0; i < this->msg_num_.C; i ++){
+					this->msg_num_.text[i] = fn(this->msg_num_.text[i]);
 				}
-				this->msg_num_.C = fn(this->msg_num_.C);
+				if(network_order == ORDER::HOST_TO_NETWORK) this->msg_num_.C = htons(this->msg_num_.C);
+			} else {
+				this->msg_str_.C = fn(this->msg_str_.C);
 			}
 		}
 
@@ -113,9 +114,9 @@ namespace Common {
 			auto protocol = new Common::Protocol();
 
 			std::memcpy(protocol->getHeader(), buffer, sizeof(Common::header_str));
-            protocol->convertHeaderOrder(ORDER::NETWORK_TO_HOST);
+			protocol->convertHeaderOrder(ORDER::NETWORK_TO_HOST);
 
-            if (protocol->hasMsg()) {
+			if (protocol->hasMsg()) {
 				if(protocol->msgTypeNumber()) {
 					msg_str <uint16_t>* msg_ = nullptr;
 					protocol->getMsg(&msg_);
@@ -134,15 +135,15 @@ namespace Common {
 		bool hasMsg()
 		{
 			return this->header_.type == Common::Protocol::TYPE::MSG ||
-					this->header_.type == Common::Protocol::TYPE::CLIST ||
-					ntohs(this->header_.type) == Common::Protocol::TYPE::MSG ||
-					ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;
+				   this->header_.type == Common::Protocol::TYPE::CLIST ||
+				   ntohs(this->header_.type) == Common::Protocol::TYPE::MSG ||
+				   ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;
 		}
 
 		bool msgTypeNumber()
 		{
 			return this->header_.type == Common::Protocol::TYPE::CLIST ||
-					ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;
+				   ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;
 		}
 
 	};

@@ -62,7 +62,7 @@ namespace Client {
                     {
                         case 'M':
                         {
-                            std::cout << "Eu (" << this->my_id_ << "): " << buf << std::endl;
+                            std::cout << "Eu (" << this->my_id_ << "): " << buf << std::flush;
 
                             header_->type = Common::Protocol::MSG;
                             header_->dest = atoi(&buf[2]);
@@ -108,8 +108,8 @@ namespace Client {
                 {
                     case Common::Protocol::TYPE::OK:
                     {
-                        this->my_id_ = header_->dest;
                         if(header_->seq == 0) {
+                            this->my_id_ = header_->dest;
                             std::cout << "Conexao realizada com sucesso! Seu id e: "<< this->my_id_ << std::endl << std::endl;
                             std::cout << "Escolha uma das opcoes:" << std::endl;
                             std::cout << "\tL : ver lista de usuarios conectados" << std::endl;
@@ -127,7 +127,7 @@ namespace Client {
                         Common::msg_str<char>* msg_tex;
                         protocol_->getMsg(&msg_tex);
 
-                        std::cout << "Mensagem de " << protocol_->getHeader()->src << ":" << msg_tex->text << std::endl;
+                        std::cout << "Mensagem de " << protocol_->getHeader()->src << ": " << msg_tex->text << std::flush;
                     }
                         break;
 
@@ -137,11 +137,11 @@ namespace Client {
                         protocol_->getMsg(&msg_num);
 
                         int i = 0;
-                        std::cout  << "Clientes disponíveis: ";
+                        std::cout  << "Clientes disponíveis: " << std::flush;
                         for (; i < msg_num->C; i ++) {
                             std::cout << msg_num->text[i] << " ";
                         }
-                        std::cout  << std::endl;
+                        std::cout << std::endl;
                     }
                         break;
 
