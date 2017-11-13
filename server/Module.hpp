@@ -84,9 +84,12 @@ namespace Server {
 
                         if (header_->dest == 0) {
                             // Broadcast
+                            uint16_t src = header_->src;
                             for (auto clients_sockets : clients_sockets_) {
-                                if (clients_sockets != TC_INVALID_SOCKET && clients_sockets != clients_sockets_[header_->src]) {
-                                    this->tcpSend(clients_sockets, std::move(protocol_));
+                                std::shared_ptr<Common::Protocol> protocol_cp ((Common::Protocol *) malloc(sizeof(Common::Protocol)));
+                                memcpy(protocol_cp.get(), protocol_.get(), sizeof(Common::Protocol));
+                                if (clients_sockets != TC_INVALID_SOCKET && clients_sockets != clients_sockets_[src]) {
+                                    this->tcpSend(clients_sockets, std::move(protocol_cp));
                                 }
                             }
                             header_->type = Common::Protocol::TYPE::OK;
