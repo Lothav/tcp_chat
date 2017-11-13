@@ -10,6 +10,7 @@
 #include <zconf.h>
 #include <cstring>
 #include <thread>
+#include <sstream>
 #include "../common/Socket.hpp"
 #include "../common/Protocol.hpp"
 #include "UserInterface.hpp"
@@ -53,25 +54,38 @@ namespace Client {
 
         void handleEvent(int event_mask, int socket_) {
             if ((event_mask & Common::Socket::EVENT_TYPE::KEYBOARD) == Common::Socket::EVENT_TYPE::KEYBOARD) {
-                char buf[405];
+                auto buf = (char*) malloc(405);
                 if (fgets(buf, 405, stdin)) {
                     std::unique_ptr<Common::header_str> header_ (new Common::header_str);
                     std::shared_ptr<Common::Protocol> protocol (new Common::Protocol());
 
-                    switch (buf[0])
+                    char* pch = strtok (buf," ");
+
+                    switch (pch[0])
                     {
                         case 'M':
                         {
-                            std::cout << "Eu (" << this->my_id_ << "): " << buf << std::flush;
-
+                            pch = strtok (nullptr, " ");
                             header_->type = Common::Protocol::MSG;
-                            header_->dest = atoi(&buf[2]);
+                            header_->dest = atoi(&pch[1]);
                             header_->seq = seq_counter;
                             header_->src = this->my_id_;
 
+                            std::stringstream str_buf;
+
+                            pch = strtok (nullptr, " ");
+                            while (pch != NULL) {
+                                str_buf << pch << " ";
+                                pch = strtok (nullptr, " ");
+                            }
+
+                            std::string message_ = str_buf.str();
+
+                            std::cout << "Eu (" << this->my_id_ << "): " << message_ << std::flush;
+
                             std::unique_ptr<Common::msg_str<char>> msg_(new Common::msg_str<char>);
-                            msg_->C = static_cast<uint16_t>(strlen(buf));
-                            strcpy(msg_->text, buf);
+                            msg_->C = static_cast<uint16_t>(message_.size());
+                            strcpy(msg_->text, message_.c_str());
 
                             protocol->setHeader(header_.get());
                             protocol->setMsg(msg_.get());
@@ -96,7 +110,7 @@ namespace Client {
                             break;
 
                         default:
-                            std::cout << buf[0] << " nao e uma opcao valida" << std::endl;
+                            std::cout << pch[0] << " nao e uma opcao valida" << std::endl;
                     }
                 }
             }
