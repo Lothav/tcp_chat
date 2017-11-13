@@ -5,10 +5,7 @@
 #ifndef TCP_CHATsocket__HPP
 #define TCP_CHATsocket__HPP
 
-#include <sys/socket.h>
-#include <stdexcept>
-#include <vector>
-#include <functional>
+
 #include "Protocol.hpp"
 
 #define LOCAL_HOST "127.0.0.1"

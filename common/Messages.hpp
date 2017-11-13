@@ -18,22 +18,10 @@ namespace Common {
             CLIST = 7
         } ;
 
-
     private:
+
         Messages() {};
         ~Messages() {};
-
-        static std::array<int, 7> _valid_msg_types = {1,2,3,4,5,6,7};
-
-    public:
-
-        static bool checkValidMsg(unsigned short &type)
-        {
-            return std::find(
-                    Messages::_valid_msg_types.begin(),
-                    Messages::_valid_msg_types.end(),
-                    type) != std::end(Messages::_valid_msg_types);
-        }
     };
 }
 

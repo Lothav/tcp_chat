@@ -5,15 +5,8 @@
 #ifndef TCP_CHAT_MODULE_HPP
 #define TCP_CHAT_MODULE_HPP
 
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <zconf.h>
-#include <cstring>
-#include <thread>
-#include <sstream>
+
 #include "../common/Socket.hpp"
-#include "../common/Protocol.hpp"
-#include "UserInterface.hpp"
 
 namespace Client {
 

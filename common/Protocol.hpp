@@ -3,6 +3,17 @@
 
 #include <cstdint>
 #include <array>
+#include <iostream>
+#include <sys/socket.h>
+#include <stdexcept>
+#include <vector>
+#include <functional>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <zconf.h>
+#include <cstring>
+#include <thread>
+#include <sstream>
 
 namespace Common {
 
@@ -113,18 +124,18 @@ namespace Common {
 		{
 			auto protocol = new Common::Protocol();
 
-			std::memcpy(protocol->getHeader(), buffer, sizeof(Common::header_str));
+			memcpy(protocol->getHeader(), buffer, sizeof(Common::header_str));
 			protocol->convertHeaderOrder(ORDER::NETWORK_TO_HOST);
 
 			if (protocol->hasMsg()) {
 				if(protocol->msgTypeNumber()) {
 					msg_str <uint16_t>* msg_ = nullptr;
 					protocol->getMsg(&msg_);
-					std::memcpy(msg_, buffer + sizeof(Common::header_str), sizeof(Common::msg_str <uint16_t>));
+					memcpy(msg_, buffer + sizeof(Common::header_str), sizeof(Common::msg_str <uint16_t>));
 				} else {
 					msg_str <char>* msg_ = nullptr;
 					protocol->getMsg(&msg_);
-					std::memcpy(msg_, buffer + sizeof(Common::header_str), sizeof(Common::msg_str <char>));
+					memcpy(msg_, buffer + sizeof(Common::header_str), sizeof(Common::msg_str <char>));
 				}
 			}
 			protocol->convertMsgOrder(ORDER::NETWORK_TO_HOST);

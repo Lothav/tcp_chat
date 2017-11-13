@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <sstream>
 #include "../common/Socket.hpp"
-#include "../common/Protocol.hpp"
 
 #define TC_MAX_REQUESTS 5
 
