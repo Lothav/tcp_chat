@@ -100,15 +100,11 @@ namespace Common {
 
 			if(this->hasMsg()) {
 				if (this->msgTypeNumber()) {
-					msg_str<uint16_t>* msg = &this->msg_num_;
-					msg->C = fn(msg->C);
-					for(int i = 0; i < msg->C; i ++){
-						msg->text[i] = fn(msg->text[i]);
+					for(int i = 0; i < this->msg_num_.C; i ++){
+						this->msg_num_.text[i] = fn(this->msg_num_.text[i]);
 					}
-				} else {
-					msg_str<char>* msg = &this->msg_str_;
-					msg->C = fn(msg->C);
 				}
+				this->msg_num_.C = fn(this->msg_num_.C);
 			}
 		}
 
@@ -146,7 +142,7 @@ namespace Common {
 		bool msgTypeNumber()
 		{
 			return this->header_.type == Common::Protocol::TYPE::CLIST ||
-					ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;;
+					ntohs(this->header_.type) == Common::Protocol::TYPE::CLIST;
 		}
 
 	};

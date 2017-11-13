@@ -88,7 +88,7 @@ namespace Common {
 			}
 		}
 
-        void tcpSend (int socket_, std::shared_ptr<Common::Protocol> protocol_)
+        void tcpSend (int socket_, const std::shared_ptr<Common::Protocol>& protocol_)
         {
 			bool hasMsg = protocol_->hasMsg();
 			protocol_->convertHeaderOrder(Protocol::ORDER::HOST_TO_NETWORK);
@@ -96,19 +96,17 @@ namespace Common {
 			if (hasMsg) {
 
                 protocol_->convertMsgOrder(Protocol::ORDER::HOST_TO_NETWORK);
-
                 if (protocol_->msgTypeNumber()) {
 
                     size_t send_size = sizeof(header_str) + sizeof(msg_str<std::uint16_t>);
-                    std::unique_ptr<char> buffer ((char *)malloc(send_size));
-                    memcpy(buffer.get(), protocol_->getHeader(), sizeof(header_str));
-                
-                    Common::msg_str<uint16_t>* str = nullptr;
-                    protocol_->getMsg(&str);
-                    memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<std::uint16_t>));
+					std::unique_ptr<char> buffer((char *) malloc(send_size));
+                	memcpy(buffer.get(), protocol_->getHeader(), sizeof(header_str));
+
+                	Common::msg_str<uint16_t>* str = nullptr;
+                	protocol_->getMsg(&str);
+                	memcpy(buffer.get()+sizeof(header_str), str, sizeof(msg_str<std::uint16_t>));
 
                     send(socket_, buffer.get(), send_size, 0);
-
                 } else {
 
                     size_t send_size = sizeof(header_str) + sizeof(msg_str<char>);

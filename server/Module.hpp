@@ -68,7 +68,7 @@ namespace Server {
 
                         this->clients_sockets_.push_back(socket_);
 
-                        this->tcpSend(socket_, protocol_);
+                        this->tcpSend(socket_, std::move(protocol_));
                         break;
 
                     case Common::Protocol::TYPE::FLW:
@@ -76,7 +76,7 @@ namespace Server {
                         clients_sockets_[header_->src] = TC_INVALID_SOCKET;
                         header_->type = Common::Protocol::TYPE::OK;
                         protocol_->setHeader(header_);
-                        this->tcpSend(socket_, protocol_);
+                        this->tcpSend(socket_, std::move(protocol_));
                         close(socket_);
                         break;
 
@@ -86,24 +86,25 @@ namespace Server {
                             // Broadcast
                             for (auto clients_sockets : clients_sockets_) {
                                 if (clients_sockets != TC_INVALID_SOCKET && clients_sockets != clients_sockets_[header_->src]) {
-                                    this->tcpSend(clients_sockets, protocol_);
+                                    this->tcpSend(clients_sockets, std::move(protocol_));
                                 }
                             }
                             header_->type = Common::Protocol::TYPE::OK;
                             protocol_->setHeader(header_);
-                            this->tcpSend(socket_, protocol_);
+                            this->tcpSend(socket_, std::move(protocol_));
                         } else {
-                            std::vector<uint16_t>::iterator find_dest = std::find(clients_sockets_.begin(), clients_sockets_.end(), header_->dest);
-                            if(find_dest == clients_sockets_.end()) {
+                            if(clients_sockets_[header_->dest] == 0) {
                                 // invalid destination
                                 header_->type = Common::Protocol::TYPE::ERRO;
                                 protocol_->setHeader(header_);
-                                this->tcpSend(socket_, protocol_);
+                                this->tcpSend(socket_, std::move(protocol_));
                             } else {
-                                this->tcpSend(header_->dest, protocol_);
+                                // send to header_->dest
+                                this->tcpSend(clients_sockets_[header_->dest], std::move(protocol_));
+                                // confirm to socket_ OK
                                 header_->type = Common::Protocol::TYPE::OK;
                                 protocol_->setHeader(header_);
-                                this->tcpSend(socket_, protocol_);
+                                this->tcpSend(socket_, std::move(protocol_));
                             }
                         }
                         break;
@@ -116,10 +117,17 @@ namespace Server {
 
                         Common::msg_str<uint16_t>* msg_;
                         protocol_->getMsg(&msg_);
-                        msg_->C = static_cast<uint16_t>( clients_sockets_.size()-1);
-                        memcpy(&msg_->text, clients_sockets_.data()+1, sizeof(uint16_t)*(clients_sockets_.size()-1));
 
-                        this->tcpSend(socket_, protocol_);
+                        std::vector<uint16_t> ids = {};
+                        uint16_t i = 0;
+                        for(i = 0; i < clients_sockets_.size(); i++){
+                            if(clients_sockets_[i] != TC_INVALID_SOCKET){
+                                ids.push_back(i);
+                            }
+                        }
+                        msg_->C = static_cast<uint16_t>( ids.size() );
+                        memcpy(&(msg_->text), ids.data(), sizeof(uint16_t) * ids.size());
+                        this->tcpSend(socket_, std::move(protocol_));
 
                         break;
                     }
@@ -128,7 +136,7 @@ namespace Server {
                         std::cout << "Invalid Type";
                         header_->type = Common::Protocol::TYPE::ERRO;
                         protocol_->setHeader(header_);
-                        this->tcpSend(socket_, protocol_);
+                        this->tcpSend(socket_, std::move(protocol_));
 
                         break;
                 }
