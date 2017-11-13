@@ -24,8 +24,8 @@ namespace Common {
 
 	private:
 
-		struct header_str 					header_;
-		struct msg_str<char> 	msg_str_;
+		struct header_str 				header_;
+		struct msg_str<char> 	        msg_str_;
 		struct msg_str<uint16_t> 		msg_num_;
 
 	public:

@@ -30,7 +30,7 @@ namespace Common {
 
     protected:
 
-		std::vector<uint16_t > clients_sockets_ = {TC_INVALID_SOCKET};
+		std::vector<uint16_t> clients_sockets_ = {TC_INVALID_SOCKET};
 
 		Socket()
         {
@@ -142,7 +142,7 @@ namespace Common {
                 return Common::Protocol::getProtocolFromBuffer(buffer.get());
             } else {
 				close(socket);
-                throw "Failed to receive data";
+                std::cout << "Conexão com socket " << socket << " encerrada." << std::endl;
             }
         }
     };

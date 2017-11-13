@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <zconf.h>
 #include <cstring>
+#include <algorithm>
 #include <sstream>
 #include "../common/Socket.hpp"
 #include "../common/Protocol.hpp"
@@ -92,13 +93,14 @@ namespace Server {
                             protocol_->setHeader(header_);
                             this->tcpSend(socket_, protocol_);
                         } else {
-                            if(header_->dest < 0 || header_->dest > clients_sockets_.size() || clients_sockets_[header_->dest] < 0) {
+                            std::vector<uint16_t>::iterator find_dest = std::find(clients_sockets_.begin(), clients_sockets_.end(), header_->dest);
+                            if(find_dest == clients_sockets_.end()) {
                                 // invalid destination
                                 header_->type = Common::Protocol::TYPE::ERRO;
                                 protocol_->setHeader(header_);
                                 this->tcpSend(socket_, protocol_);
                             } else {
-                                this->tcpSend(clients_sockets_[header_->dest], protocol_);
+                                this->tcpSend(header_->dest, protocol_);
                                 header_->type = Common::Protocol::TYPE::OK;
                                 protocol_->setHeader(header_);
                                 this->tcpSend(socket_, protocol_);

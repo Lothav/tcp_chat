@@ -65,7 +65,7 @@ namespace Client {
                             std::cout << "Eu (" << this->my_id_ << "): " << buf << std::endl;
 
                             header_->type = Common::Protocol::MSG;
-                            header_->dest = buf[1];
+                            header_->dest = atoi(&buf[2]);
                             header_->seq = seq_counter;
                             header_->src = this->my_id_;
 
